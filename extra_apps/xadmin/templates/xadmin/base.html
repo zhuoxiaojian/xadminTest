@@ -1,0 +1,120 @@
+{% load xadmin_tags %}{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+  <link rel="icon" href="/static/title_icon.ico" type="image/x-icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+  {% block extrameta %}
+  <meta name="description" content="">
+  <meta name="author" content="">
+  {% endblock %}
+  {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+  <title>{% block title %}{% endblock %}</title>
+  {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "xadmin/css/rtl.css" %}{% endblock %}" />{% endif %}
+  {% vendor 'bootstrap.css' %}
+  {% if site_theme %}
+  <link rel="stylesheet" type="text/css" id="site-theme" href="{{site_theme}}" />
+  {% else %}
+  <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/themes/bootstrap-xadmin.css" %}" />
+  {% endif %}
+  {% vendor 'font-awesome.css' 'xadmin.main.css' 'xadmin.plugins.css' 'xadmin.responsive.css' %}
+  {{ media.css }}
+  {% block extrastyle %}{% endblock %}
+  {% vendor 'jquery.js' %}
+  {% url 'xadmin:index' as indexurl %}
+  <script type="text/javascript">
+    window.__admin_media_prefix__ = "{% filter escapejs %}{% static "xadmin/" %}{% endfilter %}";
+    window.__admin_path_prefix__ = "{% filter escapejs %}{{ indexurl }}{% endfilter %}";
+    window.__admin_language_code__ = "{{LANGUAGE_CODE}}";
+  </script>
+  <script type="text/javascript" src="{% url 'xadmin:jsi18n' %}"></script>
+  {% block extrahead %}{% endblock %}
+  {% view_block 'extrahead' %}
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+   <div class="modal fade" id="playModal">
+    <div class="modal-dialog" style="text-align: center;margin: 300px auto">
+        <div style="text-align: center;display: inline-block">
+            <div >
+                <img src="/static/load.gif">
+                <p style="margin: 0 auto;font-family: Microsoft YaHei;color:#ffffff;font-size:22px;">运行中...</p>
+            </div>
+{#            <div class="calculate-middle">正在计算中</div>#}
+        </div>
+    </div>
+   </div>
+   <div class="modal fade" id="pauseModal">
+        <div class="modal-dialog" style="text-align: center;margin: 250px auto">
+        <div style="text-align: center;display: inline-block">
+            <div >
+                <img src="/static/load.gif">
+                <p style="margin: 0 auto;font-family: Microsoft YaHei;color:#ffffff;font-size:22px;">暂停中...</p>
+            </div>
+{#            <div class="calculate-middle">正在计算中</div>#}
+        </div>
+    </div>
+   </div>
+
+   <!-- Modal -->
+    <div class="modal fade" id="varModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document" style="margin: 200px auto">
+        <div class="modal-content" style="text-align: center;background: white;">
+
+            <div class="modal-header" style="text-align: center">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+              <h4 class="modal-title" id="myModalLabel">广告创意</h4>
+            </div>
+            <div class="modal-body" style="text-align: center">
+
+                <div id="var-content" style="text-align: center;">
+                    <img src="/static/load.gif" />
+                </div>
+
+              </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+{#              <button type="button" class="btn btn-primary">确定</button>#}
+            </div>
+
+          </div>
+      </div>
+    </div>
+
+  {% block body %}
+    <div id="content-block" class="col-sm-12">
+    {% block content %}{% endblock content %}
+    </div>
+  {% endblock body %}
+
+  {% vendor 'jquery-ui-sortable.js' 'bootstrap.js' 'xadmin.main.js' 'xadmin.responsive.js' %}
+  {{ media.js }}
+  {% block extrabody %}{% endblock %}
+  {% view_block 'extrabody' %}
+   <script type="application/javascript">
+       function getVar(){
+           $.ajax({
+           url : "/admin/getUserVariation",
+           type : "GET",
+           dataType : "json",
+           success : function(data, status, xhr) {
+
+                   {#console.log(data)#}
+                   $("#var-content").empty();
+                   $.each(data, function (i, item) {
+                        var img_url = "/media/" + item.adMaterial
+                        $("#var-content").append(
+                            "<tr style='width: 100%;text-align: center;display: inline-block;'>"
+                            + "<td style='width: 100%;text-align: center;display: inline-block;'><img src='" + img_url + "'><br><p style='text-align=center'>创意ID："+item.file_id+"</p><br><pstyle='text-align=center'>创意尺寸："+item.width+"x"+item.height+"</p></td>"
+                            + "</tr>"
+
+                        );
+                        $("#var-content").append("<hr>")
+                   })
+           },
+           error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert("获取广告创意失败！！");
+            }
+           })
+       }
+   </script>
+</body>
+</html>
